@@ -20,7 +20,7 @@ Then go to **Settings** > **Valenced** > **Plugins** > **[+]** and pick the plug
 
 | Name | Description | Authors | Version |
 | --- | --- | --- | --- |
-| [Permission Viewer](plugins/permission-viewer) | Inspect the permissions a server, channel, role, or member has. | Livie <755950362342457384>, tralwdwdd | 1.0.0 |
+| [Permission Viewer](plugins/permission-viewer) | Inspect the permissions a server, channel, role, or member has. | Livie <755950362342457384>, tralwdwdd | 1.0.1 |
 
 <!-- PLUGINS_TABLE_END -->
 
