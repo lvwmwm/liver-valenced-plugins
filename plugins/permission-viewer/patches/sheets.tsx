@@ -24,9 +24,12 @@ const CHANNEL_SHEET = /^ChannelLongPress-/
  */
 type Finder = (tree: unknown) => ReactElement[] | undefined
 
-/** Row group carries `hasIcons`; row carries a string label. */
+/** Row group carries rows; row carries a string label. */
 const isRowGroup = (node: any) =>
-	isValidElement(node) && (node as any).props?.hasIcons !== undefined
+	isValidElement(node) &&
+	(Array.isArray((node as any).props?.children)
+		? (node as any).props.children.every((child: any) => child?.props?.label)
+		: typeof (node as any).props?.children?.props?.label === 'string')
 
 const childrenOf = (node: any): ReactElement[] | undefined => {
 	const children = node?.props?.children
