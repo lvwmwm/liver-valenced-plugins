@@ -1,4 +1,5 @@
 import { Design } from '@valenced/discord/design'
+import { Pressable } from 'react-native'
 import { useMemo } from 'react'
 import {
 	getAllowIcon,
@@ -8,7 +9,11 @@ import {
 	getPassthroughIcon,
 	getUserAvatar,
 } from '../lib/client'
-import { channelOverwriteKey, openSheet } from '../lib/navigation'
+import {
+	channelOverwriteKey,
+	openSheet,
+	openUserProfile,
+} from '../lib/navigation'
 import { channelPermissionCategories } from '../lib/permissions'
 import {
 	isRoleOverwrite,
@@ -224,9 +229,24 @@ export function ChannelOverwriteRow({
 	if (summary.allowed) parts.push(`${summary.allowed} allowed`)
 	if (summary.denied) parts.push(`${summary.denied} denied`)
 
+	const icon = subjectIcon(guildId, overwrite)
+
 	return (
 		<TableRow
-			icon={subjectIcon(guildId, overwrite)}
+			icon={
+				isRoleOverwrite(overwrite) ? (
+					icon
+				) : (
+					<Pressable
+						onPress={() => openUserProfile(overwrite.id)}
+						hitSlop={8}
+						accessibilityRole="button"
+						accessibilityLabel="Open user profile"
+					>
+						{icon}
+					</Pressable>
+				)
+			}
 			label={
 				<Text
 					lineClamp={1}

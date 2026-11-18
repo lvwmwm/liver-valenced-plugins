@@ -1,5 +1,13 @@
 import { ActionSheetActionCreators } from '@valenced/discord/actions'
+import { ImportTrackerModuleId } from '@valenced/discord/common/import-tracker'
+import { LoggerModuleId } from '@valenced/discord/common/logger'
+import { withStoreName } from '@valenced/discord/flux'
 import { RootNavigationRef } from '@valenced/discord/modules/main_tabs_v2'
+import { lookupModule } from '@valenced/modules/finders'
+import {
+	withDependencies,
+	withName,
+} from '@valenced/modules/finders/filters'
 import { api } from '..'
 import type { ComponentProps, ComponentType } from 'react'
 
@@ -34,6 +42,33 @@ export function openSheet<T extends ComponentType<any>>(
 		props,
 		stackingBehavior,
 	)
+}
+
+type ShowUserProfileActionSheet = (
+	props: { userId: string },
+	stackingBehavior?: SheetStacking,
+) => void
+
+const { ordered, relative } = withDependencies
+
+export function openUserProfile(userId: string): void {
+	const [show] = lookupModule(
+		withName<ShowUserProfileActionSheet>('showUserProfileActionSheet').and(
+			withDependencies(
+				ordered([
+					LoggerModuleId,
+					lookupModule(withStoreName('UserStore'))[1],
+					relative(1),
+					relative(2),
+					relative(3),
+					ImportTrackerModuleId,
+				]),
+			),
+		),
+	)
+
+	if (show) show({ userId }, 'stack')
+	else api?.plugin.reportError('Could not open user profile')
 }
 
 /** Keys carry the subject id; a shared key collapses sheets into each other. */
