@@ -36,9 +36,9 @@ const childrenOf = (node: any): ReactElement[] | undefined => {
 	return Array.isArray(children) ? children : undefined
 }
 
-/** A section list: every entry is a row group, never a group's own rows. */
+/** A section list: row groups, possibly alongside unrendered group components. */
 const groupsOf = (node: unknown): ReactElement[] | undefined =>
-	Array.isArray(node) && node.length > 0 && node.every(isRowGroup)
+	Array.isArray(node) && node.length > 0 && node.some(isRowGroup)
 		? (node as ReactElement[])
 		: undefined
 
@@ -60,8 +60,43 @@ const finders: Finder[] = [
 		),
 ]
 
+/** Finds the sheet by component identity, independent of row shapes. */
+function findActionSheet(
+	node: unknown,
+): ReactElement<{ children?: unknown }> | undefined {
+	if (Array.isArray(node)) {
+		for (const child of node) {
+			const found = findActionSheet(child)
+			if (found) return found
+		}
+		return
+	}
+	if (!isValidElement(node)) return
+	const element = node as ReactElement<{ children?: unknown }>
+	if (element.type === Design.ActionSheet) return element
+	return findActionSheet(element.props?.children)
+}
+
 /** Inserts the row; index 1 puts it beside "Mark as read". */
 function addRow(tree: unknown, row: ReactElement, index?: number) {
+	const sheet = findActionSheet(tree)
+	if (sheet) {
+		const children = [sheet.props.children]
+			.flat()
+			.filter(Boolean) as ReactElement[]
+
+		// A re-render reuses the element, so guard against stacking duplicates.
+		if (children.some(child => child?.key === row.key)) return true
+
+		children.splice(
+			index === undefined ? children.length : Math.min(index, children.length),
+			0,
+			row,
+		)
+		sheet.props.children = children
+		return true
+	}
+
 	for (const find of finders) {
 		const groups = find(tree)
 		if (!groups?.length) continue
