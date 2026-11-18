@@ -5,7 +5,7 @@ import { api } from '..'
 import { RoleItemWithMenu } from '../components/rolePill'
 import { replaceProfileRolesList } from './profileRoles'
 import type { ReactNode } from 'react'
-import type { RoleItemComponent } from '../components/rolePill'
+import type { MenuRoleItem, RoleItemComponent } from '../components/rolePill'
 
 /**
  * Replaces the client's `RoleItem` export by import path.
@@ -21,7 +21,7 @@ type RoleItemModule = {
 	default: ProfileCard
 }
 
-let roleItem: RoleItemComponent | undefined
+let roleItem: MenuRoleItem | undefined
 
 export function getRoleItem() {
 	return roleItem

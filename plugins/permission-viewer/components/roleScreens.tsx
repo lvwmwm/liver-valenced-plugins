@@ -1,6 +1,8 @@
 import { Design } from '@valenced/discord/design'
+import { StyleSheet, View } from 'react-native'
 import { openSheet, roleKey } from '../lib/navigation'
 import { permissionProbe } from '../lib/permissions'
+import { getRoleItem } from '../lib/roleItem'
 import { useRoleMemberCounts } from '../lib/roles'
 import { getRole } from '../lib/stores'
 import {
@@ -75,16 +77,37 @@ export function RolePermissionsSheet({
 			subtitle={role && role.id === guildId ? '@everyone' : undefined}
 		>
 			{role ? (
-				<PermissionGrid
-					guildId={guildId}
-					hasPermission={permissionProbe(role.permissions)}
-				/>
+				<>
+					<RolePill guildId={guildId} role={role} />
+					<PermissionGrid
+						guildId={guildId}
+						hasPermission={permissionProbe(role.permissions)}
+					/>
+				</>
 			) : (
 				<EmptyState title="This role is no longer available." />
 			)}
 		</PermissionSheet>
 	)
 }
+
+/** The role as a client pill; its menu drops "View Permissions" (same sheet). */
+function RolePill({ guildId, role }: { guildId: string; role: Role }) {
+	const RoleItem = getRoleItem()
+	if (!RoleItem) return null
+
+	return (
+		<View style={styles.pill}>
+			<RoleItem role={role} guildId={guildId} hideViewPermissions />
+		</View>
+	)
+}
+
+const styles = StyleSheet.create({
+	pill: {
+		paddingHorizontal: 16,
+	},
+})
 
 interface RoleListProps {
 	guildId: string

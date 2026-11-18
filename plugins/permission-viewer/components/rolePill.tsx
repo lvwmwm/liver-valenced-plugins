@@ -28,6 +28,17 @@ export type RoleItemComponent = FC<{
 	onLongPress?(): void
 }>
 
+/** The patched pill, as consumed inside this plugin's sheets. */
+export type MenuRoleItem = FC<{
+	role: Role
+	guildId?: string
+	color?: string
+	onPress?(): void
+	onLongPress?(): void
+	disableInteraction?: boolean
+	hideViewPermissions?: boolean
+}>
+
 export interface RoleItemWithMenuProps {
 	/** Client's own pill. */
 	Pill: RoleItemComponent
@@ -35,10 +46,16 @@ export interface RoleItemWithMenuProps {
 	guildId?: string
 	/** Onboarding sets this; pills are decoration there. */
 	disableInteraction?: boolean
+	/** In the role's own sheet, "View Permissions" would reopen the same sheet. */
+	hideViewPermissions?: boolean
 }
 
 /** Copy name, color, icon, id; permissions only when the guild is known. */
-function pillItems(role: Role, guildId: string | undefined) {
+function pillItems(
+	role: Role,
+	guildId: string | undefined,
+	hideViewPermissions = false,
+) {
 	const items: {
 		label: string
 		IconComponent?: GeneratedIcon
@@ -79,20 +96,22 @@ function pillItems(role: Role, guildId: string | undefined) {
 	})
 
 	if (guildId) {
-		items.push({
-			label: 'View Permissions',
-			IconComponent: getPermissionsIcon(),
-			action: () =>
-				openSheet(
-					roleKey(guildId, role.id),
-					RolePermissionsSheet,
-					{
-						guildId,
-						roleId: role.id,
-					},
-					'stack',
-				),
-		})
+		if (!hideViewPermissions) {
+			items.push({
+				label: 'View Permissions',
+				IconComponent: getPermissionsIcon(),
+				action: () =>
+					openSheet(
+						roleKey(guildId, role.id),
+						RolePermissionsSheet,
+						{
+							guildId,
+							roleId: role.id,
+						},
+						'stack',
+					),
+			})
+		}
 
 		items.push({
 			label: 'View Members',
@@ -119,6 +138,7 @@ export function RoleItemWithMenu({
 	role,
 	guildId,
 	disableInteraction,
+	hideViewPermissions,
 }: RoleItemWithMenuProps) {
 	// Onboarding draws pills as decoration, so no menu.
 	if (disableInteraction) return <Pill role={role} guildId={guildId} />
@@ -136,7 +156,7 @@ export function RoleItemWithMenu({
 	return (
 		<Menu
 			title={role.name}
-			items={pillItems(role, guildId)}
+			items={pillItems(role, guildId, hideViewPermissions)}
 			triggerOnTap
 			onOpen={hapticMenuOpen}
 		>
