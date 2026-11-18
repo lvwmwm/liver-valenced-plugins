@@ -184,14 +184,25 @@ interface UserActions {
 }
 
 let userActions: UserActions | undefined
+let userActionsVersion = 0
+const userActionListeners = new Set<() => void>()
 
 export function resolveUserActions(cleanup: (...fns: (() => any)[]) => void) {
 	cleanup(
 		getModuleWithImportedPath<UserActions>(USER_ACTIONS_PATH, module => {
 			if (typeof module.getUser !== 'function') return
 			userActions = module
+			userActionsVersion++
+			for (const listener of userActionListeners) listener()
 		}),
 	)
+}
+
+function subscribeToUserActions(listener: () => void) {
+	userActionListeners.add(listener)
+	return () => {
+		userActionListeners.delete(listener)
+	}
 }
 
 async function hydrateUsers(ids: string[]) {
@@ -215,9 +226,10 @@ export function useMemberUsers(ids: string[]) {
 	const [, bump] = useReducer(count => count + 1, 0)
 
 	useEffect(() => subscribeToMemberStores(bump), [])
+	useEffect(() => subscribeToUserActions(bump), [])
 	useEffect(() => {
 		hydrateUsers(key ? key.split(',') : [])
-	}, [key])
+	}, [key, userActionsVersion])
 }
 
 /** @everyone is stored under the guild id. */

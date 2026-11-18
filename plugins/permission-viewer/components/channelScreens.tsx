@@ -153,6 +153,7 @@ export function ChannelOverwriteSheet({
 	type,
 }: ChannelOverwriteSheetProps) {
 	const { TableRow, TableRowGroup } = Design
+	useMemberUsers([subjectId])
 	const channel = getChannel(channelId)
 	const overwrite = channel
 		? getOverwrites(channel).find(
